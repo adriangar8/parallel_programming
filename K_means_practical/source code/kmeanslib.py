@@ -79,7 +79,7 @@ libkmeans.find_closest_centroid.restype = c_uint8
 libkmeans.kmeans.argtypes = [c_uint8, POINTER(Cluster), c_uint32, POINTER(RGB)]
 libkmeans.kmeans.restype = None
 
-def example_usage():
+def main():
 
     image_path = b'imagen.bmp'  # Path to the input BMP image
     output_image_path = b'output_img.bmp'  # Path for the output BMP image
@@ -115,5 +115,6 @@ def example_usage():
     print("Image processed and saved successfully.")
 
 if __name__ == "__main__":
-    example_usage()
+
+    main()
 
