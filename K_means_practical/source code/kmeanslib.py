@@ -11,6 +11,18 @@ libkmeans = CDLL('/home/agarcias/Documents/UAB_year3/parallel_programming/parall
 # Define the ctypes equivalent of the C structs
 
 class Cluster(Structure):
+    """
+    Represents a cluster in the K-means algorithm.
+
+    Attributes:
+        num_puntos (int): The number of points in the cluster.
+        r (int): The red component of the cluster's color.
+        g (int): The green component of the cluster's color.
+        b (int): The blue component of the cluster's color.
+        media_r (int): The average red component of the points in the cluster.
+        media_g (int): The average green component of the points in the cluster.
+        media_b (int): The average blue component of the points in the cluster.
+    """
     _fields_ = [("num_puntos", c_uint32),
                 ("r", c_uint8),
                 ("g", c_uint8),
@@ -20,11 +32,30 @@ class Cluster(Structure):
                 ("media_b", c_uint32)]
 
 class RGB(Structure):
+    """
+    Represents a color in the RGB color space.
+
+    Attributes:
+        b (int): The blue component of the color.
+        g (int): The green component of the color.
+        r (int): The red component of the color.
+    """
     _fields_ = [("b", c_uint8),
                 ("g", c_uint8),
                 ("r", c_uint8)]
 
 class Image(Structure):
+    """
+    Represents an image with its properties and pixel data.
+
+    Attributes:
+        length (int): The length of the image.
+        width (int): The width of the image.
+        height (int): The height of the image.
+        header (bytes): The header data of the image.
+        pixels (POINTER(RGB)): A pointer to the pixel data of the image.
+        fp (c_void_p): A void pointer representing the FILE* of the image.
+    """
     _fields_ = [("length", c_uint32),
                 ("width", c_uint32),
                 ("height", c_uint32),
