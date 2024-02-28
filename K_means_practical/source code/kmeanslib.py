@@ -87,10 +87,15 @@ def example_usage():
     # Instantiate the Image structure
     img = Image()
 
-    # Read the image file
+    # Read the image file control
     if libkmeans.read_file(image_path, byref(img)) == -1:
-        print("Failed to read the image")
+
+        print("\nFailed to read the image\n")
         return
+    
+    else:
+
+        print("\nImage read successfully\n")
 
     # Define the number of clusters and instantiate Cluster array
     k = 3  # Number of clusters
