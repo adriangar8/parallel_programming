@@ -1,24 +1,33 @@
 #define MAX(a,b) ((a) > (b) ? a : b)
 #define MIN(a,b) ((a) < (b) ? a : b)
 
-/*
- * Cluster 
+/**
+ * @brief Structure representing a cluster in the K-means algorithm.
+ * 
+ * This structure holds information about a cluster, including the number of points in the cluster,
+ * the RGB color values of the cluster, and the average RGB values of the cluster.
  */
 typedef struct {
-	uint32_t num_puntos;
-	uint8_t r, g, b;
-	uint32_t media_r, media_g, media_b;
+	uint32_t num_puntos;    /**< Number of points in the cluster */
+	uint8_t r, g, b;        /**< RGB color values of the cluster */
+	uint32_t media_r, media_g, media_b;    /**< Average RGB values of the cluster */
 } cluster;
 
-/*
- * RGB (pixel)
+/**
+ * @brief Structure representing an RGB color.
+ * 
+ * This structure stores the red, green, and blue components of an RGB color.
+ * Each component is represented by an 8-bit unsigned integer.
  */
 typedef struct {
-    	uint8_t b, g, r;
+	uint8_t b, g, r;
 } rgb;
 
-/*
- * Image 
+/**
+ * @brief Structure representing an image.
+ * 
+ * This structure holds information about an image, including its length, width, and height, as well as
+ * the header of the image file, and the pixels of the image.
  */
 typedef struct {
 	uint32_t length;
