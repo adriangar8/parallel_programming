@@ -1,6 +1,12 @@
 '''
 This script is a Python module that demonstrates how to use the kmeans 
 C library in Python using ctypes.
+
+How was the C library created?
+
+The C library was created by compiling the kmeans.c file using the following command:
+    gcc -shared -o libkmeans.so -fPIC kmeans.c
+    
 '''
 
 from ctypes import *
