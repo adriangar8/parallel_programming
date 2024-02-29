@@ -5,9 +5,6 @@ C library in Python using ctypes.
 
 from ctypes import *
 
-# Import a shared library called "libkmeans.so" using the CDLL class from the ctypes module in Python.
-libkmeans = CDLL('/home/agarcias/Documents/UAB_year3/parallel_programming/parallel_programming_repo/K_means_practical/source code/libkmeans.so') 
-
 # Define the ctypes equivalent of the C structs
 
 class Cluster(Structure):
@@ -63,58 +60,146 @@ class Image(Structure):
                 ("pixels", POINTER(RGB)),
                 ("fp", c_void_p)]  # FILE* is treated as void pointer
 
-# Map the C functions
-libkmeans.read_file.argtypes = [c_char_p, POINTER(Image)]
-libkmeans.read_file.restype = c_int
+# Define the Kmeans class
+class Kmeans:
 
-libkmeans.write_file.argtypes = [c_char_p, POINTER(Image), POINTER(Cluster), c_uint8]
-libkmeans.write_file.restype = c_int
+    # Constructor
+    def __init__(self):
+        # Import a shared library called "libkmeans.so" using the CDLL class from the ctypes module in Python.
+        self.libkmeans = CDLL('/home/agarcias/Documents/UAB_year3/parallel_programming/parallel_programming_repo/K_means_practical/source code/libkmeans.so') 
 
-libkmeans.getChecksum.argtypes = [POINTER(Cluster), c_uint8]
-libkmeans.getChecksum.restype = c_uint32
+    # Read file method
+    def read_file(self, name, image):
+        """
+        Reads an image file and stores its properties and pixel data in the Image structure.
 
-libkmeans.find_closest_centroid.argtypes = [POINTER(RGB), POINTER(Cluster), c_uint8]
-libkmeans.find_closest_centroid.restype = c_uint8
+        Args:
+            name (bytes): The name of the image file.
+            image (Image): The Image structure to store the image data.
 
-libkmeans.kmeans.argtypes = [c_uint8, POINTER(Cluster), c_uint32, POINTER(RGB)]
-libkmeans.kmeans.restype = None
+        Returns:
+            int: 0 if the image was read successfully, -1 if there was an error.
+        """
+        return self.libkmeans.read_file(name, byref(image))
 
+    # Write file method
+    def write_file(self, output, image, clusters, k):
+        """
+        Writes the processed image to a new file.
+
+        Args:
+            output (bytes): The name of the output file.
+            image (Image): The Image structure containing the processed image data.
+            clusters (POINTER(Cluster)): A pointer to the array of Cluster structures representing the clusters.
+            k (int): The number of clusters.
+
+        Returns:
+            int: 0 if the image was written successfully, -1 if there was an error.
+        """
+        return self.libkmeans.write_file(output, byref(image), clusters, k)
+
+    # Get checksum method
+    def getChecksum(self, clusters, k):
+        """
+        Computes the checksum of the clusters.
+
+        Args:
+            clusters (POINTER(Cluster)): A pointer to the array of Cluster structures representing the clusters.
+            k (int): The number of clusters.
+
+        Returns:
+            int: The checksum of the clusters.
+        """
+        return self.libkmeans.getChecksum(clusters, k)
+    
+    # K-means computation method
+    def kmeans_computation(self, k, img, clusters):
+        """
+        Perform k-means computation on an image.
+
+        Args:
+            k (int): The number of clusters.
+            img (Image): The image object.
+            clusters (int): The number of clusters.
+
+        Returns:
+            ndarray: The computed k-means result.
+        """
+        return self.libkmeans.kmeans(k, clusters, img.length, img.pixels)
+    
+    # K-means method
+    def kmeans(self, k, name_file, output = None):
+        """
+        Perform k-means clustering on an image and write the processed image to a new file.
+
+        Args:
+            k (int): The number of clusters.
+            name_file (bytes): The name of the original image file.
+            output (bytes): The name of the output file.
+
+        Returns:
+            int: 0 if the image was processed and written successfully, -1 if there was an error.
+        """
+        # Instantiate the Image structure
+        img = Image()
+
+        # Convert the name_file to bytes
+        # c_name_file = name_file.encode('utf-8')
+
+        # Convert the output to bytes
+        # c_output = output.encode('utf-8')
+
+        # Instantiate the Cluster array
+        c_clusters = (Cluster * k)()
+
+        # Read the image file
+        if self.read_file(name_file, img) == -1:
+            print("\nFailed to read the image\n")
+            return -1
+        else:
+            print("\nImage read successfully\n")
+
+        # Perform k-means computation
+        self.kmeans_computation(k, img, c_clusters)
+
+        # Get the checksum of the clusters
+        self.getChecksum(c_clusters, k)
+
+        # Write the processed image to a new file
+        if output is not None:
+            if self.write_file(output, img, c_clusters, k) == -1:
+                print("\nFailed to write the image\n")
+                return -1
+
+        print("\nImage processed and saved successfully.\n")
+        print('-----------------------------------------')
+        return 0
+
+# [Unit test]
+# Different unity test to check the functionality of the Kmeans class with different k.
 def main():
 
-    image_path = b'imagen.bmp'  # Path to the input BMP image
-    output_image_path = b'output_img.bmp'  # Path for the output BMP image
+    # Instantiate the Kmeans class
+    kmeans = Kmeans()
 
-    # Instantiate the Image structure
-    img = Image()
+    # Test with k = 3
+    kmeans.kmeans(3, b'imagen.bmp', b'output_img3.bmp')
 
-    # Read the image file control
-    if libkmeans.read_file(image_path, byref(img)) == -1:
+    # Test with k = 5
+    kmeans.kmeans(5, b'imagen.bmp', b'output_img5.bmp')
 
-        print("\nFailed to read the image\n")
-        return
-    
-    else:
+    # Test with k = 10
+    kmeans.kmeans(10, b'imagen.bmp', b'output_img10.bmp')
 
-        print("\nImage read successfully\n")
+    # Test with k = 20
+    kmeans.kmeans(20, b'imagen.bmp', b'output_img20.bmp')
 
-    # Define the number of clusters and instantiate Cluster array
-    k = 3  # Number of clusters
-    centroids = (Cluster * k)()
+    # Test with k = 50
+    kmeans.kmeans(50, b'imagen.bmp', b'output_img50.bmp')
 
-    # Initialize centroids (optional, depending on your C implementation)
-    # Here we would initialize centroids if needed. This step depends on your C code's expectations.
-
-    # Perform k-means clustering
-    libkmeans.kmeans(c_uint8(k), centroids, img.length * img.width * img.height, img.pixels)
-
-    # Write the processed image to a new file
-    if libkmeans.write_file(output_image_path, byref(img), centroids, c_uint8(k)) == -1:
-        print("Failed to write the image")
-        return
-
-    print("Image processed and saved successfully.")
+    # Test with k = 100
+    kmeans.kmeans(100, b'imagen.bmp', b'output_img100.bmp')
 
 if __name__ == "__main__":
 
     main()
-
